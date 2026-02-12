@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: quant-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # 挂载配置文件，方便修改
+      - ./config:/app/config
+      # 开发模式：挂载代码目录，支持热重载
+      - ./backend:/app/backend
+      - ./core:/app/core
+      - ./strategies:/app/strategies
+      - ./backtest:/app/backtest
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - quant-network
+
+  # 前端服务
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: quant-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      # 开发模式：挂载前端代码，支持热重载
+      - ./frontend:/app
+      - /app/node_modules  # 防止覆盖容器内的 node_modules
+    environment:
+      - NODE_ENV=development
+      - DOCKER=true  # 标记在Docker环境中
+      - VITE_API_URL=http://backend:8000  # Docker网络中的后端地址
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - quant-network
+
+networks:
+  quant-network:
+    driver: bridge
+
