@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm } from 'antd'
+import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Tag } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { strategyAPI, backtestAPI } from '../services/api'
+import { strategyAPI, backtestAPI, strategyTypesAPI } from '../services/api'
 import type { StrategyCreate, StrategyUpdate } from '../types/api'
 import BacktestModal from '../components/Backtest/BacktestModal'
 
@@ -19,6 +19,12 @@ const StrategyList: React.FC = () => {
   const { data: strategies, isLoading } = useQuery({
     queryKey: ['strategies'],
     queryFn: () => strategyAPI.list(),
+  })
+
+  // 获取可用的策略类型
+  const { data: strategyTypes } = useQuery({
+    queryKey: ['strategy-types'],
+    queryFn: () => strategyTypesAPI.list(),
   })
 
   const createMutation = useMutation({
@@ -188,11 +194,31 @@ const StrategyList: React.FC = () => {
             rules={[{ required: true, message: '请选择策略类型' }]}
           >
             <Select placeholder="请选择策略类型">
-              <Option value="moving_average">移动平均</Option>
-              <Option value="momentum">动量策略</Option>
-              <Option value="mean_reversion">均值回归</Option>
+              {strategyTypes?.available.map((type) => (
+                <Option 
+                  key={type.value} 
+                  value={type.value}
+                  disabled={!type.registered}
+                >
+                  {type.label}
+                  {!type.registered && (
+                    <Tag color="orange" style={{ marginLeft: 8 }}>
+                      未实现
+                    </Tag>
+                  )}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
+          {strategyTypes && (
+            <div style={{ fontSize: '12px', color: '#999', marginTop: -16, marginBottom: 16 }}>
+              {strategyTypes.available.filter(t => !t.registered).length > 0 && (
+                <span>
+                  提示：标记为"未实现"的策略类型暂不可用
+                </span>
+              )}
+            </div>
+          )}
           <Form.Item name="description" label="描述">
             <Input.TextArea rows={4} placeholder="请输入策略描述" />
           </Form.Item>

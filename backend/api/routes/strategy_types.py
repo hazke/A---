@@ -39,4 +39,10 @@ def _get_strategy_label(value: str) -> str:
         "mean_reversion": "均值回归"
     }
     return labels.get(value, value)
+    labels = {
+        "moving_average": "移动平均",
+        "momentum": "动量策略",
+        "mean_reversion": "均值回归"
+    }
+    return labels.get(value, value)
 

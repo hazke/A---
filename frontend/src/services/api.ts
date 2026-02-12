@@ -76,6 +76,12 @@ export const backtestAPI = {
   get: (id: string): Promise<BacktestResponse> => api.get(`/backtest/${id}`),
 }
 
+// 策略类型相关API
+export const strategyTypesAPI = {
+  list: (): Promise<{ available: Array<{ value: string; label: string; registered: boolean }>; registered: string[] }> => 
+    api.get('/strategy-types'),
+}
+
 // 数据相关API
 export const dataAPI = {
   getStocks: (): Promise<string[]> => api.get('/data/stocks'),
