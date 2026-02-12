@@ -134,6 +134,21 @@ const BacktestResult: React.FC = () => {
             <p><strong>回测期间:</strong> {backtest.start_date} 至 {backtest.end_date}</p>
             <p><strong>初始资金:</strong> ¥{backtest.initial_capital.toLocaleString()}</p>
             <p><strong>最终现金:</strong> ¥{backtest.final_cash.toLocaleString()}</p>
+            {backtest.final_value !== undefined && (
+              <p>
+                <strong>最终资产价值:</strong>{' '}
+                <span style={{ 
+                  color: backtest.final_value >= backtest.initial_capital ? '#3f8600' : '#cf1322',
+                  fontWeight: 'bold'
+                }}>
+                  ¥{backtest.final_value.toLocaleString()}
+                </span>
+                {' '}
+                <span style={{ fontSize: '12px', color: '#999' }}>
+                  (现金 + 持仓市值)
+                </span>
+              </p>
+            )}
             <p><strong>总交易次数:</strong> {backtest.total_trades}</p>
             <p><strong>胜率:</strong> {(backtest.metrics.win_rate * 100).toFixed(2)}%</p>
           </Card>

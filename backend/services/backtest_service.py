@@ -139,7 +139,8 @@ class BacktestService:
         result = backtest_engine.run(data, request.stock_code)
         
         # 收集回测结果信息
-        log_collector.add(f"回测完成: 总交易次数={result['total_trades']}, 最终现金=¥{result['final_cash']:,.2f}")
+        final_value = result.get('final_value', result['final_cash'])
+        log_collector.add(f"回测完成: 总交易次数={result['total_trades']}, 最终现金=¥{result['final_cash']:,.2f}, 最终资产价值=¥{final_value:,.2f}")
         if result['total_trades'] == 0:
             log_collector.add("⚠ 策略没有产生任何交易", "WARN")
         
@@ -178,6 +179,7 @@ class BacktestService:
             end_date=request.end_date,
             initial_capital=result['initial_capital'],
             final_cash=result['final_cash'],
+            final_value=result.get('final_value'),  # 最终资产价值（现金 + 持仓市值）
             final_positions=result['final_positions'],
             total_trades=result['total_trades'],
             trades=trades,

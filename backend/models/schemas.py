@@ -83,6 +83,7 @@ class BacktestResponse(BaseModel):
     end_date: str
     initial_capital: float
     final_cash: float
+    final_value: Optional[float] = None  # 最终资产价值（现金 + 持仓市值）
     final_positions: Dict[str, int]
     total_trades: int
     trades: List[TradeRecord]

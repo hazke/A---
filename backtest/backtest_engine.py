@@ -61,10 +61,18 @@ class BacktestEngine:
         # 计算回测指标
         metrics = self._calculate_metrics(data, result)
         
+        # 计算最终资产价值（现金 + 持仓市值）
+        final_value = self.strategy.cash
+        final_price = data.iloc[-1]['close'] if not data.empty else 0
+        for stock_code, shares in self.strategy.positions.items():
+            if shares > 0:
+                final_value += final_price * shares
+        
         return {
             'strategy_name': self.strategy.name,
             'initial_capital': self.initial_capital,
-            'final_cash': self.strategy.cash,
+            'final_cash': self.strategy.cash,  # 最终现金（不包括持仓市值）
+            'final_value': final_value,  # 最终资产价值（现金 + 持仓市值）
             'final_positions': self.strategy.positions,
             'total_trades': len(self.strategy.trade_history),
             'trades': self.strategy.trade_history,

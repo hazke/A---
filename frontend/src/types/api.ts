@@ -61,6 +61,7 @@ export interface BacktestResponse {
   end_date: string
   initial_capital: number
   final_cash: number
+  final_value?: number  // 最终资产价值（现金 + 持仓市值）
   final_positions: Record<string, number>
   total_trades: number
   trades: TradeRecord[]
