@@ -78,8 +78,15 @@ export const backtestAPI = {
 
 // 策略类型相关API
 export const strategyTypesAPI = {
-  list: (): Promise<{ available: Array<{ value: string; label: string; registered: boolean }>; registered: string[] }> => 
-    api.get('/strategy-types'),
+  list: (): Promise<{ 
+    available: Array<{ 
+      value: string
+      label: string
+      description: string
+      registered: boolean 
+    }>
+    registered: string[] 
+  }> => api.get('/strategy-types'),
 }
 
 // 数据相关API

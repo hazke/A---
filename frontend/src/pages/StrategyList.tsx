@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Table, Button, Modal, Form, Input, Select, message, Space, Popconfirm, Tag } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -15,6 +15,7 @@ const StrategyList: React.FC = () => {
   const [selectedStrategyId, setSelectedStrategyId] = useState<string>('')
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
+  const [selectedStrategyType, setSelectedStrategyType] = useState<string>('')
 
   const { data: strategies, isLoading } = useQuery({
     queryKey: ['strategies'],
@@ -22,10 +23,29 @@ const StrategyList: React.FC = () => {
   })
 
   // 获取可用的策略类型
-  const { data: strategyTypes } = useQuery({
+  const { data: strategyTypes, isLoading: isLoadingTypes, error: typesError } = useQuery({
     queryKey: ['strategy-types'],
     queryFn: () => strategyTypesAPI.list(),
   })
+
+  // 调试：检查策略类型数据
+  useEffect(() => {
+    if (typesError) {
+      console.error('获取策略类型失败:', typesError)
+    }
+    if (strategyTypes) {
+      console.log('策略类型数据:', strategyTypes)
+      console.log('可用策略数量:', strategyTypes.available?.length)
+    }
+  }, [strategyTypes, typesError])
+
+  // 调试：检查策略类型数据
+  if (typesError) {
+    console.error('获取策略类型失败:', typesError)
+  }
+  if (strategyTypes) {
+    console.log('策略类型数据:', strategyTypes)
+  }
 
   const createMutation = useMutation({
     mutationFn: (data: StrategyCreate) => strategyAPI.create(data),
@@ -70,12 +90,14 @@ const StrategyList: React.FC = () => {
 
   const handleCreate = () => {
     setEditingStrategy(null)
+    setSelectedStrategyType('')
     setIsModalVisible(true)
     form.resetFields()
   }
 
   const handleEdit = (record: any) => {
     setEditingStrategy(record)
+    setSelectedStrategyType(record.strategy_type)
     setIsModalVisible(true)
     form.setFieldsValue(record)
   }
@@ -102,6 +124,15 @@ const StrategyList: React.FC = () => {
     }
   }
 
+  // 获取策略类型的中文标签和描述
+  const getStrategyTypeInfo = (strategyType: string) => {
+    const type = strategyTypes?.available.find(t => t.value === strategyType)
+    return {
+      label: type?.label || strategyType,
+      description: type?.description || '暂无描述'
+    }
+  }
+
   const columns = [
     {
       title: '策略名称',
@@ -112,6 +143,19 @@ const StrategyList: React.FC = () => {
       title: '策略类型',
       dataIndex: 'strategy_type',
       key: 'strategy_type',
+      render: (text: string) => {
+        const info = getStrategyTypeInfo(text)
+        return (
+          <div>
+            <div style={{ fontWeight: 'bold' }}>{info.label}</div>
+            <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+              {info.description.length > 60 
+                ? `${info.description.substring(0, 60)}...` 
+                : info.description}
+            </div>
+          </div>
+        )
+      },
     },
     {
       title: '创建时间',
@@ -176,6 +220,7 @@ const StrategyList: React.FC = () => {
         onCancel={() => {
           setIsModalVisible(false)
           setEditingStrategy(null)
+          setSelectedStrategyType('')
           form.resetFields()
         }}
         confirmLoading={createMutation.isPending || updateMutation.isPending}
@@ -193,23 +238,57 @@ const StrategyList: React.FC = () => {
             label="策略类型"
             rules={[{ required: true, message: '请选择策略类型' }]}
           >
-            <Select placeholder="请选择策略类型">
-              {strategyTypes?.available.map((type) => (
-                <Option 
-                  key={type.value} 
-                  value={type.value}
-                  disabled={!type.registered}
-                >
-                  {type.label}
-                  {!type.registered && (
-                    <Tag color="orange" style={{ marginLeft: 8 }}>
-                      未实现
-                    </Tag>
-                  )}
-                </Option>
-              ))}
+            <Select 
+              placeholder="请选择策略类型"
+              onChange={(value) => setSelectedStrategyType(value)}
+              loading={isLoadingTypes}
+              notFoundContent={isLoadingTypes ? '加载中...' : (typesError ? '加载失败' : '暂无数据')}
+            >
+              {strategyTypes?.available && strategyTypes.available.length > 0 ? (
+                strategyTypes.available.map((type) => (
+                  <Option 
+                    key={type.value} 
+                    value={type.value}
+                    disabled={!type.registered}
+                  >
+                    {type.label}
+                    {!type.registered && (
+                      <Tag color="orange" style={{ marginLeft: 8 }}>
+                        未实现
+                      </Tag>
+                    )}
+                  </Option>
+                ))
+              ) : null}
             </Select>
           </Form.Item>
+          {/* 显示选中策略类型的描述 */}
+          {selectedStrategyType && strategyTypes && (
+            <div style={{ 
+              marginTop: -16, 
+              marginBottom: 16,
+              padding: '12px',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px',
+              border: '1px solid #d9d9d9',
+              maxHeight: '300px',
+              overflowY: 'auto'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#1890ff' }}>
+                策略类型描述：
+              </div>
+              <div 
+                style={{ 
+                  color: '#666', 
+                  lineHeight: '1.8', 
+                  fontSize: '14px',
+                  whiteSpace: 'pre-line'
+                }}
+              >
+                {strategyTypes.available.find(t => t.value === selectedStrategyType)?.description || '暂无描述'}
+              </div>
+            </div>
+          )}
           {strategyTypes && (
             <div style={{ fontSize: '12px', color: '#999', marginTop: -16, marginBottom: 16 }}>
               {strategyTypes.available.filter(t => !t.registered).length > 0 && (
