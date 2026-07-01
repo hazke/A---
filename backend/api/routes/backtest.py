@@ -16,8 +16,8 @@ backtest_service = get_backtest_service()
 
 
 @router.post("/backtest/run", response_model=BacktestResponse, status_code=status.HTTP_201_CREATED)
-async def run_backtest(request: BacktestRequest):
-    """运行回测"""
+def run_backtest(request: BacktestRequest):
+    """运行回测（同步路由，在线程池中执行，避免阻塞事件循环）"""
     try:
         return backtest_service.run_backtest(request)
     except ValueError as e:

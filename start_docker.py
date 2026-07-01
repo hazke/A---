@@ -53,6 +53,35 @@ def get_compose_command():
     except:
         return "docker compose"
 
+BROKEN_REGISTRY_MIRRORS = {
+    "https://docker.m.daocloud.io",
+    "https://docker.1panel.live",
+    "https://dockerpull.com",
+}
+
+def ensure_docker_registry_mirrors():
+    """确保 Docker Desktop 已配置可用镜像加速（拉取基础镜像）"""
+    daemon_path = Path.home() / ".docker" / "daemon.json"
+    needs_setup = not daemon_path.exists()
+    if daemon_path.exists():
+        try:
+            import json
+            config = json.loads(daemon_path.read_text(encoding="utf-8"))
+            mirrors = config.get("registry-mirrors", [])
+            has_broken = any(m in BROKEN_REGISTRY_MIRRORS for m in mirrors)
+            needs_setup = not mirrors or has_broken
+        except Exception:
+            needs_setup = True
+
+    if not needs_setup:
+        return
+
+    print("正在更新 Docker 镜像加速配置...")
+    setup_script = Path(__file__).parent / "setup_docker_mirrors.py"
+    if setup_script.exists():
+        subprocess.run([sys.executable, str(setup_script)], check=False)
+        print("⚠ 请重启 Docker Desktop 后再继续构建\n")
+
 def main():
     print("=" * 50)
     print("   A股量化交易系统 - Docker 启动")
@@ -93,7 +122,9 @@ def main():
     
     try:
         if choice == "1":
+            ensure_docker_registry_mirrors()
             print("\n[1/2] 构建镜像...")
+            print("（已启用 apt / pip / npm 国内镜像，首次构建仍需几分钟）\n")
             subprocess.run([compose_cmd, "build"], check=True)
             print("\n[2/2] 启动服务...")
             print("=" * 50)

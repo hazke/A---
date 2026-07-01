@@ -115,19 +115,14 @@ class BacktestService:
         # 获取股票名称（在获取数据后，确保适配器已连接）
         stock_name = None
         try:
-            # 标准化股票代码（移除可能的前缀）
-            stock_code_clean = request.stock_code
-            if '.' in stock_code_clean:
-                stock_code_clean = stock_code_clean.split('.')[-1]  # 取最后部分
-            
-            log_collector.add(f"正在获取股票名称: {stock_code_clean}")
+            log_collector.add(f"正在获取股票名称: {request.stock_code}")
             
             if hasattr(data_adapter, 'get_stock_name'):
-                stock_name = data_adapter.get_stock_name(stock_code_clean)
+                stock_name = data_adapter.get_stock_name(request.stock_code)
                 if stock_name:
                     log_collector.add(f"✓ 获取股票名称成功: {stock_name}")
                 else:
-                    log_collector.add(f"⚠ 无法获取股票名称: {stock_code_clean}，将只显示代码", "WARN")
+                    log_collector.add(f"⚠ 无法获取股票名称: {request.stock_code}，将只显示代码", "WARN")
             else:
                 log_collector.add("⚠ 数据适配器不支持获取股票名称", "WARN")
         except Exception as e:

@@ -1,8 +1,13 @@
 # 前端 Dockerfile
 FROM node:20-alpine
 
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
 # 设置工作目录
 WORKDIR /app
+
+# 使用国内 npm 镜像
+RUN npm config set registry "${NPM_REGISTRY}"
 
 # 复制 package.json
 COPY frontend/package*.json ./
@@ -23,4 +28,3 @@ ENV NODE_ENV=development
 # 启动开发服务器
 # 使用 --host 0.0.0.0 允许外部访问
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-

@@ -1,14 +1,29 @@
 # 后端 Dockerfile
 FROM python:3.10-slim
 
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+
 # 设置工作目录
 WORKDIR /app
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y \
+# 重写 apt 源为阿里云 HTTPS（sed 替换会保留 http:80，容器内常被阻断）
+RUN DEBIAN_CODENAME="$(. /etc/os-release && echo "${VERSION_CODENAME}")" && \
+    rm -f /etc/apt/sources.list.d/debian.sources && \
+    printf '%s\n' \
+      "deb https://mirrors.aliyun.com/debian/ ${DEBIAN_CODENAME} main contrib non-free non-free-firmware" \
+      "deb https://mirrors.aliyun.com/debian/ ${DEBIAN_CODENAME}-updates main contrib non-free non-free-firmware" \
+      "deb https://mirrors.aliyun.com/debian-security ${DEBIAN_CODENAME}-security main contrib non-free non-free-firmware" \
+      > /etc/apt/sources.list
+
+# 安装系统依赖（gcc 用于编译部分 Python 原生扩展）
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# 配置 pip 国内镜像
+RUN pip config set global.index-url "${PIP_INDEX_URL}" && \
+    pip config set global.trusted-host "${PIP_TRUSTED_HOST}"
 
 # 复制依赖文件
 COPY requirements.txt .
@@ -26,4 +41,3 @@ EXPOSE 8000
 
 # 启动命令
 CMD ["python", "backend/main.py"]
-

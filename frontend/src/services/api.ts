@@ -23,42 +23,49 @@ const api = axios.create({
   },
 })
 
-// 请求拦截器
-api.interceptors.request.use(
-  (config) => {
-    return config
+// 回测涉及数据拉取与计算，耗时较长
+const backtestClient = axios.create({
+  baseURL: '/api/v1',
+  timeout: 180000,
+  headers: {
+    'Content-Type': 'application/json',
   },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+})
 
-// 响应拦截器
-api.interceptors.response.use(
-  (response) => {
-    return response.data
-  },
-  (error) => {
-    if (error.response) {
-      // FastAPI 错误格式: { detail: "错误信息" }
-      const message = error.response.data?.detail || error.response.data?.error || '请求失败'
-      console.error('API错误:', {
-        status: error.response.status,
-        data: error.response.data,
-        message
-      })
-      return Promise.reject(new Error(message))
-    } else if (error.request) {
-      // 请求已发出但没有收到响应
-      console.error('网络错误:', error.message)
-      return Promise.reject(new Error('无法连接到服务器，请检查后端服务是否已启动'))
-    } else {
-      // 其他错误
-      console.error('请求错误:', error.message)
-      return Promise.reject(error)
-    }
+// 请求拦截器
+const handleResponse = (response: { data: unknown }) => response.data
+
+const handleError = (error: {
+  response?: { data?: { detail?: string; error?: string }; status?: number }
+  request?: unknown
+  message?: string
+  code?: string
+}) => {
+  if (error.response) {
+    const message = error.response.data?.detail || error.response.data?.error || '请求失败'
+    console.error('API错误:', {
+      status: error.response.status,
+      data: error.response.data,
+      message,
+    })
+    return Promise.reject(new Error(message))
   }
-)
+  if (error.request) {
+    console.error('网络错误:', error.message)
+    const isTimeout = error.code === 'ECONNABORTED'
+    return Promise.reject(new Error(
+      isTimeout
+        ? '请求超时，回测可能仍在进行，请稍后重试或缩短回测日期范围'
+        : '无法连接到服务器，请检查后端服务是否已启动'
+    ))
+  }
+  console.error('请求错误:', error.message)
+  return Promise.reject(error)
+}
+
+api.interceptors.request.use((config) => config, (error) => Promise.reject(error))
+api.interceptors.response.use(handleResponse, handleError)
+backtestClient.interceptors.response.use(handleResponse, handleError)
 
 // 策略相关API
 export const strategyAPI = {
@@ -72,7 +79,7 @@ export const strategyAPI = {
 
 // 回测相关API
 export const backtestAPI = {
-  run: (data: BacktestRequest): Promise<BacktestResponse> => api.post('/backtest/run', data),
+  run: (data: BacktestRequest): Promise<BacktestResponse> => backtestClient.post('/backtest/run', data),
   get: (id: string): Promise<BacktestResponse> => api.get(`/backtest/${id}`),
 }
 

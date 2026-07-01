@@ -26,6 +26,8 @@ export default defineConfig({
         target: backendUrl,
         changeOrigin: true,
         secure: false,
+        timeout: 300000,
+        proxyTimeout: 300000,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.error('[代理错误]', err.message)
