@@ -123,10 +123,12 @@ def main():
     try:
         if choice == "1":
             ensure_docker_registry_mirrors()
-            print("\n[1/2] 构建镜像...")
+            print("\n[1/3] 清理旧容器（避免名称冲突）...")
+            subprocess.run([compose_cmd, "down"], check=False)
+            print("\n[2/3] 构建镜像...")
             print("（已启用 apt / pip / npm 国内镜像，首次构建仍需几分钟）\n")
             subprocess.run([compose_cmd, "build"], check=True)
-            print("\n[2/2] 启动服务...")
+            print("\n[3/3] 启动服务...")
             print("=" * 50)
             print()
             subprocess.run([compose_cmd, "up"], check=True)

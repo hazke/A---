@@ -24,7 +24,7 @@
 ## 项目结构
 
 ```
-A股量化/
+a-stock-quant/
 ├── backend/              # 后端API服务
 │   ├── api/             # Controller层（路由处理）
 │   │   └── routes/      # 路由定义

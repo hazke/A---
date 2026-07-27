@@ -17,7 +17,7 @@
 ## 项目结构
 
 ```
-A股量化/
+a-stock-quant/
 ├── config/                 # 配置文件
 ├── core/                   # 核心模块
 │   ├── strategy/          # 策略模块（策略模式）

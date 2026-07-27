@@ -79,7 +79,7 @@
 ## 目录结构
 
 ```
-A股量化/
+a-stock-quant/
 ├── backend/                    # 后端API
 │   ├── api/                   # API路由层（Controller）
 │   │   ├── routes/           # 路由定义
