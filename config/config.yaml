@@ -29,3 +29,32 @@ logging:
   level: INFO
   file: logs/trading.log
 
+# AgenticQ 数据感知层 (Stage 01)
+agenticq:
+  default_symbol: "601138"
+  perception:
+    freshness_sla_seconds: 120
+    sectors:
+      - code: "BK0447"
+        name: "通信设备"
+      - code: "BK0448"
+        name: "计算机设备"
+      - code: "BK1036"
+        name: "半导体"
+      - code: "BK0800"
+        name: "人工智能"
+    etfs:
+      - code: "588000"
+        name: "科创50ETF"
+      - code: "515050"
+        name: "5G通信ETF"
+      - code: "512760"
+        name: "芯片ETF"
+    global_tickers:
+      - symbol: "NVDA"
+        name: "英伟达"
+      - symbol: "SOXX"
+        name: "半导体ETF"
+      - symbol: "QQQ"
+        name: "纳指100ETF"
+

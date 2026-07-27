@@ -98,3 +98,103 @@ export interface StockDataResponse {
   data: StockDataPoint[]
 }
 
+// --- AgenticQ Stage 01: Data Perception ---
+
+export type FieldStatus = 'ok' | 'missing' | 'stale' | 'degraded'
+
+export interface QualityFlag {
+  field_path: string
+  status: FieldStatus
+  message?: string
+  source?: string
+  observed_at?: string
+}
+
+export interface NullableMetric {
+  value?: number | null
+  status: FieldStatus
+  unit?: string
+  as_of?: string
+}
+
+export interface MarketData {
+  symbol: string
+  name?: string
+  last_price: NullableMetric
+  open: NullableMetric
+  high: NullableMetric
+  low: NullableMetric
+  prev_close: NullableMetric
+  change_pct: NullableMetric
+  volume: NullableMetric
+  amount: NullableMetric
+  vwap: NullableMetric
+  bid_ask_spread: NullableMetric
+  turnover_rate: NullableMetric
+  as_of?: string
+}
+
+export interface CapitalFlowBucket {
+  net_inflow: NullableMetric
+}
+
+export interface CapitalFlowData {
+  main: CapitalFlowBucket
+  super_large: CapitalFlowBucket
+  large: CapitalFlowBucket
+  medium: CapitalFlowBucket
+  small: CapitalFlowBucket
+  as_of?: string
+}
+
+export interface SectorItem {
+  code: string
+  name: string
+  change_pct: NullableMetric
+}
+
+export interface SectorThemeData {
+  sectors: SectorItem[]
+  etfs: SectorItem[]
+  as_of?: string
+}
+
+export interface GlobalTicker {
+  symbol: string
+  name: string
+  last_price: NullableMetric
+  change_pct: NullableMetric
+}
+
+export interface GlobalContextData {
+  tickers: GlobalTicker[]
+  as_of?: string
+}
+
+export interface DataQualitySummary {
+  overall_status: FieldStatus
+  freshness_sla_seconds: number
+  flags: QualityFlag[]
+  passed: boolean
+}
+
+export interface LivePerception {
+  symbol: string
+  collected_at: string
+  market: MarketData
+  capital_flow: CapitalFlowData
+  sector_theme: SectorThemeData
+  global_context: GlobalContextData
+  quality: DataQualitySummary
+}
+
+export interface FrozenSnapshot extends LivePerception {
+  snapshot_id: string
+  frozen_at: string
+  is_frozen: boolean
+}
+
+export interface FreezeSnapshotResponse {
+  snapshot: FrozenSnapshot
+}
+

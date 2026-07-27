@@ -10,6 +10,9 @@ import type {
   BacktestResponse,
   StockDataRequest,
   StockDataResponse,
+  LivePerception,
+  FrozenSnapshot,
+  FreezeSnapshotResponse,
 } from '../types/api'
 
 // API基础URL
@@ -101,6 +104,18 @@ export const dataAPI = {
   getStocks: (): Promise<string[]> => api.get('/data/stocks'),
   getDailyData: (data: StockDataRequest): Promise<StockDataResponse> =>
     api.post('/data/daily', data),
+}
+
+// AgenticQ 数据感知 API (Stage 01)
+export const perceptionAPI = {
+  getLive: (symbol = '601138'): Promise<LivePerception> =>
+    api.get('/perception/live', { params: { symbol } }),
+  freezeSnapshot: (symbol = '601138'): Promise<FreezeSnapshotResponse> =>
+    api.post('/perception/snapshots/freeze', { symbol }),
+  getLatestSnapshot: (symbol = '601138'): Promise<FrozenSnapshot> =>
+    api.get('/perception/snapshots/latest', { params: { symbol } }),
+  getSnapshot: (snapshotId: string): Promise<FrozenSnapshot> =>
+    api.get(`/perception/snapshots/${snapshotId}`),
 }
 
 export default api

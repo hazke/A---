@@ -10,7 +10,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from backend.api.routes import strategy, backtest, data, websocket, health, strategy_types
+from backend.api.routes import strategy, backtest, data, websocket, health, strategy_types, perception
 from core.config_manager import ConfigManager
 
 # 创建FastAPI应用
@@ -36,6 +36,7 @@ app.include_router(strategy.router, prefix="/api/v1", tags=["策略"])
 app.include_router(strategy_types.router, prefix="/api/v1", tags=["策略类型"])
 app.include_router(backtest.router, prefix="/api/v1", tags=["回测"])
 app.include_router(data.router, prefix="/api/v1", tags=["数据"])
+app.include_router(perception.router, prefix="/api/v1", tags=["数据感知"])
 app.include_router(health.router, prefix="/api/v1", tags=["健康检查"])
 app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 
@@ -44,20 +45,20 @@ app.include_router(websocket.router, prefix="/ws", tags=["WebSocket"])
 async def startup_event():
     """应用启动时初始化"""
     config = ConfigManager()
-    print("✓ API服务器启动完成")
-    print(f"✓ 文档地址: http://localhost:8000/api/docs")
-    
+    print("[OK] API server started")
+    print("[OK] Docs: http://localhost:8000/api/docs")
+
     # 检查数据源配置（不阻止启动）
     try:
         from backend.services.data_service import DataService
         service = DataService()
         if service.data_adapter is None:
-            print("⚠ 数据适配器未初始化，请检查数据源配置")
+            print("[WARN] Data adapter not initialized; check data_source config")
         else:
-            print("✓ 数据源已配置")
+            print("[OK] Data source configured")
     except Exception as e:
-        print(f"⚠ 数据源检查失败: {e}")
-        print("提示：可以在config/config.yaml中配置数据源，或使用默认的akshare")
+        print(f"[WARN] Data source check failed: {e}")
+        print("Tip: configure data_source in config/config.yaml, or use akshare")
 
 
 @app.get("/")

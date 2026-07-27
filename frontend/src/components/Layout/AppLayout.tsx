@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import {
   DashboardOutlined,
   FundOutlined,
-  BarChartOutlined,
+  RadarChartOutlined,
 } from '@ant-design/icons'
 
 const { Header, Content, Sider } = Layout
@@ -21,6 +21,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       key: '/',
       icon: <DashboardOutlined />,
       label: '仪表盘',
+    },
+    {
+      key: '/perception',
+      icon: <RadarChartOutlined />,
+      label: '数据感知',
     },
     {
       key: '/strategies',

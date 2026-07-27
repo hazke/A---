@@ -4,6 +4,7 @@ import AppLayout from './components/Layout/AppLayout'
 import Dashboard from './pages/Dashboard'
 import StrategyList from './pages/StrategyList'
 import BacktestResult from './pages/BacktestResult'
+import DataPerception from './pages/DataPerception'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <AppLayout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/perception" element={<DataPerception />} />
             <Route path="/strategies" element={<StrategyList />} />
             <Route path="/backtest/:id" element={<BacktestResult />} />
           </Routes>
